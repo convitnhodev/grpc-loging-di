@@ -1,0 +1,12 @@
+
+name: account
+grpc: 
+  port: 9090
+  enable_health_check: true 
+
+logger:
+  env:  dev 
+  service_name: account
+  level: info 
+  encoding: console
+  disable_caller: true
