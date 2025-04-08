@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/convitnhodev/common/logging"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -27,13 +28,6 @@ func main() {
 		log.Fatalf("Failed to initialize application: %v", err)
 	}
 
-	// Start service in a goroutine
-	go func() {
-		if err := service.Start(context.Background()); err != nil {
-			log.Fatalf("Failed to start service: %v", err)
-		}
-	}()
-
 	// Give the service time to start
 	time.Sleep(2 * time.Second)
 
@@ -46,7 +40,7 @@ func main() {
 	select {}
 }
 
-func testGRPCConnection(logger *zap.Logger) error {
+func testGRPCConnection(logger logging.Logger) error {
 	logger.Info("Connecting to gRPC server...")
 
 	// Use WithBlock() to wait for connection
@@ -85,6 +79,9 @@ func testGRPCConnection(logger *zap.Logger) error {
 		zap.String("message", resp.Message),
 		zap.Any("data", resp.Data),
 	)
+
+	// print context
+	fmt.Println("Context:", ctx)
 
 	logger.Info("gRPC connection test successful!")
 	return nil

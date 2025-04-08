@@ -1,0 +1,78 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Main (amd64)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "env": {
+                "GO_ENV": "development",
+                "CONFIG_PATH": "${workspaceFolder}/config",
+                "GOARCH": "amd64",
+                "GOOS": "linux"
+            },
+            "args": [],
+            "showLog": true,
+            "buildFlags": "-tags=wireinject",
+            "output": "${workspaceFolder}/bin/debug_amd64",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Debug Main (arm64)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "env": {
+                "GO_ENV": "development",
+                "CONFIG_PATH": "${workspaceFolder}/config",
+                "GOARCH": "arm64",
+                "GOOS": "linux"
+            },
+            "args": [],
+            "showLog": true,
+            "buildFlags": "-tags=wireinject",
+            "output": "${workspaceFolder}/bin/debug_arm64",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Debug Main (Current Architecture)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "env": {
+                "GO_ENV": "development",
+                "CONFIG_PATH": "${workspaceFolder}/config"
+            },
+            "args": [],
+            "showLog": true,
+            "buildFlags": "-tags=wireinject",
+            "output": "${workspaceFolder}/bin/debug_native",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Debug Tests (Current Architecture)",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${fileDirname}",
+            "env": {
+                "GO_ENV": "test",
+                "CONFIG_PATH": "${workspaceFolder}/config"
+            },
+            "args": ["-v"],
+            "showLog": true,
+            "buildFlags": "-tags=wireinject"
+        },
+        {
+            "name": "Attach to Process",
+            "type": "go",
+            "request": "attach",
+            "mode": "local",
+            "processId": "${command:pickProcess}"
+        }
+    ]
+}

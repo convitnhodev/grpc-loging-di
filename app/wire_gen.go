@@ -8,8 +8,8 @@ package app
 
 import (
 	"context"
+	"github.com/convitnhodev/common/logging"
 	"github.com/google/wire"
-	"go.uber.org/zap"
 	"grpc/account/config"
 	"grpc/account/internal/service"
 )
@@ -18,11 +18,9 @@ import (
 
 func InitializeApp(cfg *config.Config) (*service.Service, error) {
 	context := provideContext()
-	logger, err := provideLogger()
-	if err != nil {
-		return nil, err
-	}
-	serviceService := service.NewService(context, cfg, logger)
+	loggingConfig := provideLoggerConfig(cfg)
+	sugaredLogger := logging.NewLogger(loggingConfig)
+	serviceService := service.NewService(context, cfg, sugaredLogger)
 	return serviceService, nil
 }
 
@@ -33,12 +31,12 @@ func provideContext() context.Context {
 	return context.Background()
 }
 
-// Provide logger
-func provideLogger() (*zap.Logger, error) {
-	return zap.NewDevelopment()
+// Provide logger config
+func provideLoggerConfig(cfg *config.Config) *logging.Config {
+	return cfg.Loggerconfig
 }
 
 var AppSet = wire.NewSet(
 	provideContext,
-	provideLogger,
+	provideLoggerConfig,
 )

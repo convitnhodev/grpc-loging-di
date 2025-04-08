@@ -6,39 +6,36 @@ import (
 	"grpc/account/config"
 
 	"github.com/convitnhodev/common/grpc"
+	"github.com/convitnhodev/common/logging"
 	"github.com/google/wire"
+	"go.uber.org/zap"
 
 	_grpc "google.golang.org/grpc"
-
-	"go.uber.org/zap"
 )
 
 var ProviderSet = wire.NewSet(
 	NewService,
-	wire.Bind(new(GrpcServer), new(*Service)),
 )
 
 type Service struct {
 	AccountService *accountService
 	cfg            *config.Config
 	gs             *grpc.Server
-	logger         *zap.Logger
+	logger         logging.Logger
 }
 
-type GrpcServer interface {
-	Start(ctx context.Context) error
-	Stop(ctx context.Context) error
-	Logger() *zap.Logger
-}
-
-func NewService(ctx context.Context, cfg *config.Config, logger *zap.Logger) *Service {
+func NewService(ctx context.Context, cfg *config.Config, logger logging.Logger) *Service {
 	service := &Service{
 		AccountService: NewAccountService(logger),
 		cfg:            cfg,
 		logger:         logger,
 	}
 
-	service.Start(ctx)
+	go func() {
+		if err := service.Start(ctx); err != nil {
+			logger.Error("Failed to start service", zap.Error(err))
+		}
+	}()
 	return service
 }
 
@@ -70,11 +67,6 @@ func (s *Service) Start(ctx context.Context) error {
 	return gs.Start()
 }
 
-func (s *Service) Stop(ctx context.Context) error {
-	s.gs.Shutdown()
-	return nil
-}
-
-func (s *Service) Logger() *zap.Logger {
+func (s *Service) Logger() logging.Logger {
 	return s.logger
 }

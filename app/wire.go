@@ -8,8 +8,8 @@ import (
 	config "grpc/account/config"
 	"grpc/account/internal/service"
 
+	"github.com/convitnhodev/common/logging"
 	"github.com/google/wire"
-	logging "gitlab.zalopay.vn/fin/platform/common/logging"
 )
 
 // Provide context
@@ -19,7 +19,7 @@ func provideContext() context.Context {
 
 // Provide logger config
 func provideLoggerConfig(cfg *config.Config) *logging.Config {
-	return config.LoggerConfig
+	return cfg.Loggerconfig
 }
 
 var AppSet = wire.NewSet(

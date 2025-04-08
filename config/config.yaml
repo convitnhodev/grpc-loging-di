@@ -1,12 +1,10 @@
-
-name: account
-grpc: 
+name: "account-service"
+grpc:
   port: 9090
-  enable_health_check: true 
-
+  enable_health_check: true
 logger:
-  env:  dev 
-  service_name: account
-  level: info 
-  encoding: console
-  disable_caller: true
+  level: "info"
+  encoding: "json"
+  disable_stacktrace: false
+  environment: "development"
+  service_name: "account-service"

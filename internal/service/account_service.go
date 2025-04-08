@@ -6,6 +6,7 @@ import (
 	account "grpc/spec/generated/account"
 
 	"github.com/convitnhodev/common/grpc"
+	"github.com/convitnhodev/common/logging"
 
 	"go.uber.org/zap"
 )
@@ -15,10 +16,10 @@ var _ account.AccountServiceServer = &accountService{}
 
 type accountService struct {
 	account.UnimplementedAccountServiceServer
-	logger *zap.Logger
+	logger logging.Logger
 }
 
-func NewAccountService(logger *zap.Logger) *accountService {
+func NewAccountService(logger logging.Logger) *accountService {
 	return &accountService{
 		logger: logger,
 	}
@@ -43,4 +44,5 @@ func (svc *accountService) GetAccount(ctx context.Context, req *account.GetAccou
 func (svc *accountService) RegisterService(server *grpc.Server) {
 	fmt.Println("RegisterService")
 	account.RegisterAccountServiceServer(server, svc)
+	fmt.Println("RegisterService ok")
 }

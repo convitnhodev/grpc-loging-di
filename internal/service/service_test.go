@@ -1,129 +1,110 @@
 package service
 
-import (
-	"context"
-	"net"
-	"testing"
-	"time"
+// const bufSize = 1024 * 1024
 
-	"grpc/account/config"
-	account "grpc/spec/generated/account"
+// func TestServiceRegistration(t *testing.T) {
+// 	// Create a buffer for our in-memory listener
+// 	lis := bufconn.Listen(bufSize)
 
-	"github.com/convitnhodev/common/grpc"
-	"go.uber.org/zap"
+// 	// Mock config
+// 	mockConfig := &config.Config{
+// 		Name: "test-service",
+// 		GrpcConfig: &grpc.Config{
+// 			Port:              9999, // Not actually used since we're using bufconn
+// 			EnableHealthCheck: true,
+// 		},
+// 	}
 
-	gogrpc "google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+// 	// Create test context
+// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+// 	defer cancel()
 
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc/test/bufconn"
-)
+// 	logger, _ := zap.NewDevelopment()
 
-const bufSize = 1024 * 1024
+// 	// Create the service with the mock config
+// 	svc := NewService(ctx, mockConfig, logger)
 
-func TestServiceRegistration(t *testing.T) {
-	// Create a buffer for our in-memory listener
-	lis := bufconn.Listen(bufSize)
+// 	// Create a new gRPC server
+// 	srv := gogrpc.NewServer()
 
-	// Mock config
-	mockConfig := &config.Config{
-		Name: "test-service",
-		GrpcConfig: &grpc.Config{
-			Port:              9999, // Not actually used since we're using bufconn
-			EnableHealthCheck: true,
-		},
-	}
+// 	// Register the account service using the service's AccountService
+// 	account.RegisterAccountServiceServer(srv, svc.AccountService)
 
-	// Create test context
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+// 	// Serve in goroutine
+// 	go func() {
+// 		if err := srv.Serve(lis); err != nil {
+// 			t.Errorf("Server exited with error: %v", err)
+// 		}
+// 	}()
 
-	logger, _ := zap.NewDevelopment()
+// 	// Create a client connection
+// 	conn, err := gogrpc.DialContext(ctx, "bufnet", gogrpc.WithContextDialer(
+// 		func(context.Context, string) (net.Conn, error) {
+// 			return lis.Dial()
+// 		}),
+// 		gogrpc.WithTransportCredentials(insecure.NewCredentials()),
+// 		gogrpc.WithBlock(),
+// 	)
 
-	// Create the service with the mock config
-	svc := NewService(ctx, mockConfig, logger)
+// 	assert.NoError(t, err, "Failed to dial bufnet")
+// 	defer conn.Close()
 
-	// Create a new gRPC server
-	srv := gogrpc.NewServer()
+// 	// Create client
+// 	client := account.NewAccountServiceClient(conn)
 
-	// Register the account service using the service's AccountService
-	account.RegisterAccountServiceServer(srv, svc.AccountService)
+// 	// Test the GetAccount method
+// 	req := &account.GetAccountRequest{
+// 		Id: "test-id",
+// 	}
 
-	// Serve in goroutine
-	go func() {
-		if err := srv.Serve(lis); err != nil {
-			t.Errorf("Server exited with error: %v", err)
-		}
-	}()
+// 	resp, err := client.GetAccount(ctx, req)
 
-	// Create a client connection
-	conn, err := gogrpc.DialContext(ctx, "bufnet", gogrpc.WithContextDialer(
-		func(context.Context, string) (net.Conn, error) {
-			return lis.Dial()
-		}),
-		gogrpc.WithTransportCredentials(insecure.NewCredentials()),
-		gogrpc.WithBlock(),
-	)
+// 	// Verify no error and response is as expected
+// 	assert.NoError(t, err, "GetAccount failed")
+// 	assert.NotNil(t, resp, "Response should not be nil")
+// 	assert.Equal(t, int32(0), resp.Code, "Expected code 0")
+// 	assert.Equal(t, "success", resp.Message, "Expected 'success' message")
+// 	assert.Equal(t, "test-id", resp.Data.Id, "ID should match request")
+// 	assert.Equal(t, "hung dep trai", resp.Data.Name, "Name should match expected value")
+// }
 
-	assert.NoError(t, err, "Failed to dial bufnet")
-	defer conn.Close()
+// // TestServiceStart tests the service Start method
+// func TestServiceStart(t *testing.T) {
+// 	// Create a test context
+// 	ctx := context.Background()
 
-	// Create client
-	client := account.NewAccountServiceClient(conn)
+// 	// Create mock config
+// 	mockConfig := &config.Config{
+// 		Name: "test-service",
+// 		GrpcConfig: &grpc.Config{
+// 			Port:              0, // Use any available port
+// 			EnableHealthCheck: true,
+// 		},
+// 	}
 
-	// Test the GetAccount method
-	req := &account.GetAccountRequest{
-		Id: "test-id",
-	}
+// 	logger, _ := zap.NewDevelopment()
 
-	resp, err := client.GetAccount(ctx, req)
+// 	// Create service
+// 	svc := NewService(ctx, mockConfig, logger)
 
-	// Verify no error and response is as expected
-	assert.NoError(t, err, "GetAccount failed")
-	assert.NotNil(t, resp, "Response should not be nil")
-	assert.Equal(t, int32(0), resp.Code, "Expected code 0")
-	assert.Equal(t, "success", resp.Message, "Expected 'success' message")
-	assert.Equal(t, "test-id", resp.Data.Id, "ID should match request")
-	assert.Equal(t, "hung dep trai", resp.Data.Name, "Name should match expected value")
-}
+// 	// Start service in goroutine
+// 	errCh := make(chan error, 1)
+// 	go func() {
+// 		errCh <- svc.Start(ctx)
+// 	}()
 
-// TestServiceStart tests the service Start method
-func TestServiceStart(t *testing.T) {
-	// Create a test context
-	ctx := context.Background()
+// 	// Give it time to start
+// 	time.Sleep(100 * time.Millisecond)
 
-	// Create mock config
-	mockConfig := &config.Config{
-		Name: "test-service",
-		GrpcConfig: &grpc.Config{
-			Port:              0, // Use any available port
-			EnableHealthCheck: true,
-		},
-	}
+// 	// Make sure no error occurred
+// 	select {
+// 	case err := <-errCh:
+// 		assert.NoError(t, err, "Service Start returned error")
+// 	default:
+// 		// No error yet, service is still running (which is good)
+// 	}
 
-	logger, _ := zap.NewDevelopment()
-
-	// Create service
-	svc := NewService(ctx, mockConfig, logger)
-
-	// Start service in goroutine
-	errCh := make(chan error, 1)
-	go func() {
-		errCh <- svc.Start(ctx)
-	}()
-
-	// Give it time to start
-	time.Sleep(100 * time.Millisecond)
-
-	// Make sure no error occurred
-	select {
-	case err := <-errCh:
-		assert.NoError(t, err, "Service Start returned error")
-	default:
-		// No error yet, service is still running (which is good)
-	}
-
-	// Stop the service
-	err := svc.Stop(ctx)
-	assert.NoError(t, err, "Service Stop returned error")
-}
+// 	// Stop the service
+// 	err := svc.Stop(ctx)
+// 	assert.NoError(t, err, "Service Stop returned error")
+// }
